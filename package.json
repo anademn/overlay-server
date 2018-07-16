@@ -1,0 +1,37 @@
+{
+  "name": "overlay",
+  "version": "0.0.1",
+  "description": "Stream overlay",
+  "main": "app.js",
+  "author": "anademn",
+  "repository": {
+    "type": "git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "nf run nodemon app.js --",
+    "prod": "nf run ./app.js --"
+  },
+  "dependencies": {
+    "compression": "^1.7.2",
+    "connect-mongo": "^2.0.1",
+    "debug": "^3.1.0",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "express-hbs": "^1.0.4",
+    "express-rate-limit": "^2.11.0",
+    "express-session": "^1.15.6",
+    "express-ws": "^4.0.0",
+    "helmet": "^3.12.0",
+    "mongodb": "^3.0.5",
+    "multer": "^1.3.0",
+    "tmi.js": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=10.6.0"
+  },
+  "devDependencies": {
+    "foreman": "^3.0.1",
+    "nodemon": "^1.17.2"
+  }
+}

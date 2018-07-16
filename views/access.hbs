@@ -1,0 +1,13 @@
+{{#contentFor 'title'}}Granting access...{{/contentFor}}
+{{#contentFor 'scripts'}}
+<script>
+  let params = document.location.hash.slice(1).split('&').reduce((a, t) => {
+    let [k, v] = t.split('='); a[k] = v; return a
+  }, {});
+  console.log(JSON.stringify(params));
+  fetch('/video', { body: JSON.stringify(params), method: 'post', credentials: 'include', headers: { 'content-type': "application/json" } }).then(res => {
+    if (res.status == 401) window.opener.postMessage('Security issue', window.origin);
+    window.close()
+  })
+</script>
+{{/contentFor}}

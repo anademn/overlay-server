@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <title>{{block 'title'}}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="anademn, twitch, twitch.tv">
+  <meta name="description" content="Overlay for twitch.tv/anademn">
+  <link rel="icon" type="image/x-icon" href="data:image/png;base64,">
+  {{{block 'style'}}}
+</head>
+<body class="{{{block 'class'}}}">
+  {{{body}}}
+  <script>
+// Utilities
+//   $ enhances querySelectorAll
+function $ (sel, node) { return Array.prototype.slice.call( (node || document).querySelectorAll(sel) ) }
+
+//   $.addEvents enhances addEventListener
+$.addEvents = function (obj, node) {
+  for (var q in obj) for (var e in obj[q])
+    for (var ns = q ? $(q, node) : [window, document], es = e.split(' '), i = 0; i < es.length; i++)
+      typeof ns === 'undefined' || ns.forEach(n => n.addEventListener(es[i], obj[q][e].bind(n))) };
+
+//   $.load inserts a template DocumentFragment into the document
+$.load = function (id, node) {
+  (typeof node === 'undefined' ? [document.body] : $(node))
+    .forEach(n => n.appendChild(document.importNode($('template#' + id)[0].content, true))) };
+
+//   $.Machine produces state machines for the page
+$.Machine = function (s) {
+  let es = {}, state = Object.seal(s), v = Object.values, r = Promise.resolve.bind(Promise);
+  return Object.assign(this, {
+    getState () { return state },
+    on (e, fn) { (es[e] = es[e] || {})[fn.name] = fn; return this },
+    emit (e, ...args) { return e in es && v(es[e]).reduce((s, fn) => (fn.apply(s, args), s), state) },
+    emitAsync (e, ...args) { return e in es && v(es[e]).reduce((p, fn) => p.then(s => r(fn.apply(s, args)).then(() => s)), r(state)) },
+    stop (e, fname = '') { e in es && delete es[e][fname]; return this } }) }
+  </script>
+  {{{block 'scripts'}}}
+  <noscript><h6>Only viewable with JavaScript enabled.</h6></noscript>
+</body>
+</html>
