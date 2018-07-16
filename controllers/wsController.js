@@ -51,9 +51,18 @@ router.ws('/video', (ws, req) => {
     ws.send(JSON.stringify({ token }));
     accessResolve = r
   })).then(token => {
+    // TODO: Convert to Pub/Sub model!
+
+    debug('access granted');
     function sendMessage (target, context, message) {
       if (context['message-type'] === 'whisper') client.whisper(target, message);
       else client.say(target, message)
+    }
+    function sendPing () {
+      return client.ping().then(function () { debugIRC('Successfully PONGed a PING')})
+        .catch(function (err) { debugIRC('Did not successfully PONG a PING because: %O', err) })
+        .then(() => new Promise(r => setTimeout(r, 600000)))
+        .then(sendPing)
     }
 
     let opts = {
@@ -63,17 +72,50 @@ router.ws('/video', (ws, req) => {
       },
       channels: ['#anademn']
     }, client = new tmi.client(opts);
+
+    //client.on('ping', function () { debugIRC('received ping.. T_T') });
+    client.on('ping', function () {
+      debugIRC('received ping, sending \'PONG :tmi.twitch.tv\\r\\n\'')
+      client.raw('PONG :tmi.twitch.tv\r\n')
+    });
+
     client.on('message', function (target, context, message, self) {
       debugIRC('[%s (%s)] %s: %s', target, context['message-type'], context.username, message);
-      ws.send(JSON.stringify({ context: context['message-type'], username: context.username, message}))
+      ws.send(JSON.stringify({ eventType: 'message', context: context['message-type'], username: context.username, message}))
     });
+
     client.on('connected', function (addr, port) {
+      setTimeout(sendPing, 30000);
       debugIRC('* Connected to %s:%s', addr, port);
-      ws.send(JSON.stringify({ connected: true }))
+      ws.send(JSON.stringify({ eventType: 'connected' }))
     });
-    client.on('disconnected', function onDisconnectedHandler (reason) {
+    client.on('disconnected', function (reason) {
       debugIRC('* Disconnected: %s', reason);
-      ws.send(JSON.stringify({ disconnected: reason }))
+      ws.send(JSON.stringify({ eventType: 'disconnected', reason }))
+      // TODO: set up auto reconnect!
+    });
+
+    client.on('join', function (channel, username, self) {
+      debugIRC('* Join: %s', username);
+      ws.send(JSON.stringify({ eventType: 'join', username }))
+    });
+    client.on('part', function (channel, username, self) {
+      debugIRC('* Part: %s', username);
+      ws.send(JSON.stringify({ eventType: 'part', username }))
+    });
+
+    client.on('subscription', function (channel, username) {
+      debugIRC('* Part: %s', username);
+      ws.send(JSON.stringify({ eventType: 'subscription', username }))
+    });
+    client.on('resub', function (channel, username, months, message) {
+      debugIRC('* Part: %s', username);
+      ws.send(JSON.stringify({ eventType: 'resub', username, months, message }))
+    });
+
+    client.on('names', function (channel, users) {
+      debugIRC('* Got names: %O', users);
+      ws.send(JSON.stringify({ eventType: 'names', users }))
     });
     client.connect()
   })

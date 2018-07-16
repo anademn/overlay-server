@@ -25,10 +25,10 @@ $.addEvents({
       $('button')[0].click();
       let canvas = $('canvas')[0];
 
-      // HD1080 stream overlay
-      canvas.width = 1920;
-      canvas.height = 1080;
-      overlay.emit('init-stream', canvas);
+      // HD720 stream overlay
+      canvas.width = 1280;
+      canvas.height = 720;
+      document.fonts.ready.then(() => overlay.emit('init-stream', canvas));
     },
     message (e) {
       console.log(e.data)
@@ -88,14 +88,12 @@ Stream = function (uri, stream) {
         console.log('Oauth token received');
         let tmp = document.createElement('template');
         tmp.innerHTML = data.token;
-        window.open(tmp.content.firstChild.href, 'oauth', 'left=200,top=200,width=420,height=420')
-      } else if (['message', 'username', 'context'].every(x => x in data) && kl == 3) overlay.emit('chat', data);
-      else if ('connected' in data && kl == 1) overlay.emit('chat', data);
-      else if ('disconnected' in data && kl == 1) overlay.emit('chat', data);
+        window.open(tmp.content.firstChild.href, 'oauth', 'left=100,top=100,width=420,height=540')
+      } else if ('eventType' in data) overlay.emit('chat', data)
     },
     onclose (e) {
       console.log('WS closed');
-      mr.stop();
+      mr.pause();
     }
   });
   return { socket: ws, recorder: mr }
