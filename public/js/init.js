@@ -89,7 +89,7 @@ Stream = function (uri, stream) {
         let tmp = document.createElement('template');
         tmp.innerHTML = data.token;
         window.open(tmp.content.firstChild.href, 'oauth', 'left=200,top=200,width=420,height=420')
-      } else if (['messsage', 'username', 'context'].every(x => x in data) && kl == 3) overlay.emit('chat', data);
+      } else if (['message', 'username', 'context'].every(x => x in data) && kl == 3) overlay.emit('chat', data);
       else if ('connected' in data && kl == 1) overlay.emit('chat', data);
       else if ('disconnected' in data && kl == 1) overlay.emit('chat', data);
     },
